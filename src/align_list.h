@@ -519,8 +519,9 @@ static R_INLINE void add_match_depth(unsigned long  *ald, unsigned long begin,un
 	return;
 }
 
-
-void count_align_depth (unsigned long *ald,unsigned long begin,unsigned long end,const bam1_t * align)
+// Modified to provide a separate count for reverse matches.
+void count_align_depth (unsigned long *ald_f, unsigned long *ald_r,
+			unsigned long begin,unsigned long end,const bam1_t * align)
 {
 	// All positions are 0-based handled.
 	// position: 0-based position of first cigar-op nuc
@@ -534,6 +535,12 @@ void count_align_depth (unsigned long *ald,unsigned long begin,unsigned long end
 	const uint32_t *cigar=bam1_cigar(align);
 	position=align->core.pos;
 	n_cigar=align->core.n_cigar;
+
+	// MJ. To separate between forward and reverse strand do:
+	// bam1_strand returns TRUE for the reverse strand.
+	//	unsigned long *ald = bam1_strand( align ) ? ald_r : ald_f;
+	unsigned long *ald =  (align->core.flag & 0x10) ? ald_r : ald_f;
+	// MJ end. 
 
 	// Add first cigar (must be match)
 	//Rprintf("[count_align_depth] pos: %lu\tlen: %u\n",position,cigar[0]>>BAM_CIGAR_SHIFT);
@@ -569,7 +576,9 @@ void count_align_depth (unsigned long *ald,unsigned long begin,unsigned long end
 	}
 }
 
-void count_align_gap_depth (unsigned long *ald,unsigned long begin,unsigned long end,const bam1_t * align)
+// Modified to provide a separate count for reverse matches.
+void count_align_gap_depth (unsigned long *ald_f, unsigned long *ald_r,
+			    unsigned long begin,unsigned long end,const bam1_t * align)
 {
 	// All positions are 0-based handled.
 	if(!align)
@@ -581,6 +590,12 @@ void count_align_gap_depth (unsigned long *ald,unsigned long begin,unsigned long
 	const uint32_t *cigar=bam1_cigar(align);
 	position=align->core.pos;
 	n_cigar=align->core.n_cigar;
+
+	// MJ. To separate between forward and reverse strand do:
+	// bam1_strand returns TRUE for the reverse strand.
+	//	unsigned long *ald = bam1_strand( align ) ? ald_r : ald_f;
+	unsigned long *ald =  (align->core.flag & 0x10) ? ald_r : ald_f;
+	// MJ end. 
 
 	// Store count coords for right adjacent match
 
