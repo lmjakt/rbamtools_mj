@@ -2794,7 +2794,7 @@ SEXP bam_range_get_qual_df(SEXP pRange)
 	return dflist;
 }
 
-SEXP bam_range_get_align_depth(SEXP pRange,SEXP pGap)
+SEXP bam_range_get_align_depth(SEXP pRange,SEXP pGap, SEXP flagFilter)
 {
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Count align depth for given range
@@ -2805,6 +2805,15 @@ SEXP bam_range_get_align_depth(SEXP pRange,SEXP pGap)
 	if(TYPEOF(pGap)!=LGLSXP)
 		error("[bam_range_get_align_depth] pGap must be LGLSXP!");
 
+	// MJ. To filter based on flags we can introduce a flag filter
+	// alignments that match any of the filters are silently ignored.
+	// The flag check is carried out in the count_align_gap_depth
+	// function to avoid changing the form of the code below.
+	// (i.e. the use of get_const_next_align(l) as an argument to 
+	// count_align_gap_depth
+	if(TYPEOF(flagFilter)!=INTSXP)
+	  error("[bam_range_get_align_depth] flagFilter must be an INTSXP!");
+	unsigned int fFilter = INTEGER(flagFilter)[0];
 
 	unsigned nProtected=0;
 	align_list *l=(align_list*)(R_ExternalPtrAddr(pRange));
